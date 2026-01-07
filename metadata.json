@@ -1,0 +1,7 @@
+{
+  "name": "ECHO-GUARD AI",
+  "description": "An AI-powered wildlife conservation system that monitors forest audio sensors to detect poaching, illegal logging, and forest fires in real-time.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
