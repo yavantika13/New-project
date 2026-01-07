@@ -57,50 +57,64 @@
 // }
 //new
 
-import multer from "multer";
-import fetch from "node-fetch";
+// import multer from "multer";
+// import fetch from "node-fetch";
 
-const upload = multer();
+// const upload = multer();
 
-app.post("/analyze-audio", upload.single("file"), async (req, res) => {
-  try {
-    const buffer = req.file.buffer;
-    const base64 = buffer.toString("base64");
+// app.post("/analyze-audio", upload.single("file"), async (req, res) => {
+//   try {
+//     const buffer = req.file.buffer;
+//     const base64 = buffer.toString("base64");
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + process.env.GEMINI_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: "Detect sound: tiger, chainsaw, gunshot, human or normal forest. Reply one word."
-                },
-                {
-                  inlineData: {
-                    mimeType: "audio/wav",
-                    data: base64
-                  }
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
+//     const response = await fetch(
+//       "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + process.env.GEMINI_API_KEY,
+//       {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           contents: [
+//             {
+//               parts: [
+//                 {
+//                   text: "Detect sound: tiger, chainsaw, gunshot, human or normal forest. Reply one word."
+//                 },
+//                 {
+//                   inlineData: {
+//                     mimeType: "audio/wav",
+//                     data: base64
+//                   }
+//                 }
+//               ]
+//             }
+//           ]
+//         })
+//       }
+//     );
 
-    const data = await response.json();
-    const label = data.candidates?.[0]?.content?.parts?.[0]?.text || "unknown";
+//     const data = await response.json();
+//     const label = data.candidates?.[0]?.content?.parts?.[0]?.text || "unknown";
 
-    res.json({
-      label,
-      confidence: Math.random() * 30 + 70 // fake confidence for demo
-    });
+//     res.json({
+//       label,
+//       confidence: Math.random() * 30 + 70 // fake confidence for demo
+//     });
 
-  } catch (err) {
-    res.status(500).json({ error: "AI failed" });
-  }
-});
+//   } catch (err) {
+//     res.status(500).json({ error: "AI failed" });
+//   }
+// });
+
+
+export async function analyzeLiveAudio(blob: Blob): Promise<string> {
+  const form = new FormData();
+  form.append("file", blob);
+
+  const res = await fetch("https://echo-guard.onrender.com/analyze-audio", {
+    method: "POST",
+    body: form
+  });
+
+  const data = await res.json();
+  return data.label || "unknown";
+}
