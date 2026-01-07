@@ -1,31 +1,63 @@
-// Handles microphone recording for Echo-Guard
+// // Handles microphone recording for Echo-Guard
 
-let mediaRecorder: MediaRecorder | null = null
-let audioChunks: Blob[] = []
+// let mediaRecorder: MediaRecorder | null = null
+// let audioChunks: Blob[] = []
+
+// export async function startRecording() {
+//   const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+//   mediaRecorder = new MediaRecorder(stream)
+
+//   audioChunks = []
+
+//   mediaRecorder.ondataavailable = event => {
+//     audioChunks.push(event.data)
+//   }
+
+//   mediaRecorder.start()
+// }
+
+// export async function stopRecording(): Promise<Blob> {
+//   return new Promise(resolve => {
+//     if (!mediaRecorder) return
+
+//     mediaRecorder.onstop = () => {
+//       const audioBlob = new Blob(audioChunks, { type: "audio/wav" })
+//       resolve(audioBlob)
+//     }
+
+//     mediaRecorder.stop()
+//   })
+// }
+
+
+//new
+
+let mediaRecorder: MediaRecorder | null = null;
+let audioChunks: Blob[] = [];
 
 export async function startRecording() {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  mediaRecorder = new MediaRecorder(stream)
+  mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
 
-  audioChunks = []
+  mediaRecorder.ondataavailable = (event) => {
+    audioChunks.push(event.data);
+  };
 
-  mediaRecorder.ondataavailable = event => {
-    audioChunks.push(event.data)
-  }
-
-  mediaRecorder.start()
+  mediaRecorder.start();
 }
 
 export async function stopRecording(): Promise<Blob> {
-  return new Promise(resolve => {
-    if (!mediaRecorder) return
+  return new Promise((resolve) => {
+    if (!mediaRecorder) return;
 
     mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/wav" })
-      resolve(audioBlob)
-    }
+      const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+      resolve(audioBlob);
+    };
 
-    mediaRecorder.stop()
-  })
+    mediaRecorder.stop();
+  });
 }
