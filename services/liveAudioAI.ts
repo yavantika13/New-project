@@ -105,16 +105,30 @@
 //   }
 // });
 
+const API_URL = "https://echo-guard-backend.onrender.com/analyze-audio";
 
-export async function analyzeLiveAudio(blob: Blob): Promise<string> {
-  const form = new FormData();
-  form.append("file", blob);
+export async function analyzeLiveAudio(audioBlob: Blob): Promise<string> {
+  try {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "audio.wav");
 
-  const res = await fetch("https://echo-guard.onrender.com/analyze-audio", {
-    method: "POST",
-    body: form
-  });
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: formData,
+    });
 
-  const data = await res.json();
-  return data.label || "unknown";
+    if (!response.ok) {
+      throw new Error("Server error");
+    }
+
+    const data = await response.json();
+
+    // Expected response from backend:
+    // { label: "Tiger", confidence: 0.92 }
+
+    return data.label || "unknown";
+  } catch (error) {
+    console.error("Audio analysis failed:", error);
+    return "error";
+  }
 }
