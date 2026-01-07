@@ -9,13 +9,26 @@ const DETECTION_SCHEMA = {
   properties: {
     type: { 
       type: Type.STRING, 
-      description: "Classify the sound into: 'Wildlife', 'Chainsaw/Logging', 'Poaching/Gunshot', 'Forest Fire', or 'Normal Background'." 
+      description: "Classify into: 'Wildlife', 'Chainsaw/Logging', 'Poaching/Gunshot', 'Forest Fire', 'Vehicle Intrusion', 'Human Presence', or 'Normal Background'." 
+    },
+    detectedSound: {
+      type: Type.STRING,
+      description: "Specific sound identified, e.g., 'chainsaw', 'gunshot', 'elephant roar', 'truck engine', 'axe impact'."
+    },
+    detectedSpecies: {
+      type: Type.STRING,
+      description: "Specific animal species if applicable (Tiger, Elephant, Bird, Frog, Insect, Dog)."
     },
     confidence: { type: Type.NUMBER, description: "Confidence score between 0 and 1." },
-    details: { type: Type.STRING, description: "A brief description of the specific sound identified (e.g., 'Macaw call', 'Two-stroke engine', 'Gunshot')." },
-    riskLevel: { type: Type.STRING, description: "Risk level: 'Low', 'Medium', 'High', or 'Critical'." }
+    details: { type: Type.STRING, description: "Short summary of the event." },
+    explanation: { type: Type.STRING, description: "A brief AI explanation of what was heard and its environmental context." },
+    riskLevel: { type: Type.STRING, description: "Risk level: 'Low', 'Medium', 'High', or 'Critical'." },
+    status: {
+      type: Type.STRING,
+      description: "Status based on threat: 'Under Threat', 'Wildlife Activity', 'Safe', or 'Caution'."
+    }
   },
-  required: ["type", "confidence", "details", "riskLevel"]
+  required: ["type", "detectedSound", "confidence", "details", "explanation", "riskLevel", "status"]
 };
 
 export async function analyzeForestAudio(base64Data: string, mimeType: string): Promise<Partial<DetectionEvent>> {
@@ -31,7 +44,21 @@ export async function analyzeForestAudio(base64Data: string, mimeType: string): 
             }
           },
           {
-            text: "You are a wildlife conservation specialist. Analyze this forest audio clip. Identify if there are sounds of illegal logging, poaching, fire, or wildlife. Return the classification in JSON format."
+            text: `You are ECHO-GUARD, an expert AI forest surveillance system. Analyze this audio.
+            Detect:
+            - Forest Cutting (chainsaw, axe, tree falling) -> Logging
+            - Gunshot (poaching) -> Poaching
+            - Vehicle movement -> Vehicle Intrusion
+            - Human shouting -> Human Presence
+            - Tiger, Elephant, Bird, Frog, Insect -> Wildlife
+            - Normal forest sounds -> Background
+
+            Alert rules:
+            - Forest Cutting or Gunshot -> High/Critical risk if confidence > 0.6
+            - Vehicle/Human -> Medium risk if confidence > 0.6
+            - Tiger/Elephant -> Wildlife alert if confidence > 0.7
+
+            Return response in the specified JSON format.`
           }
         ]
       },
@@ -45,17 +72,24 @@ export async function analyzeForestAudio(base64Data: string, mimeType: string): 
     
     return {
       type: result.type as SoundType,
+      detectedSound: result.detectedSound,
+      detectedSpecies: result.detectedSpecies,
       confidence: result.confidence,
       riskLevel: result.riskLevel as RiskLevel,
-      details: result.details
+      details: result.details,
+      explanation: result.explanation,
+      status: result.status
     };
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
     return {
       type: SoundType.UNKNOWN,
+      detectedSound: "Unknown",
       confidence: 0,
       riskLevel: RiskLevel.LOW,
-      details: "Analysis failed due to sensor error."
+      details: "Analysis failed.",
+      explanation: "Sensor encountered a neural processing error.",
+      status: "Safe"
     };
   }
 }

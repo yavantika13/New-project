@@ -1,12 +1,46 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SidebarProps {
   activeTab: 'dashboard' | 'monitor' | 'storage';
   setActiveTab: (tab: 'dashboard' | 'monitor' | 'storage') => void;
 }
 
+type HealthStatus = 'healthy' | 'caution' | 'error';
+
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+  const [health, setHealth] = useState<HealthStatus>('healthy');
+  const [statusMessage, setStatusMessage] = useState('All Nodes Operational');
+
+  useEffect(() => {
+    const healthInterval = setInterval(() => {
+      const rand = Math.random();
+      if (rand > 0.85) {
+        setHealth('error');
+        setStatusMessage('Node-042 Disconnected');
+      } else if (rand > 0.65) {
+        setHealth('caution');
+        setStatusMessage('High Latency - Sector 4');
+      } else {
+        setHealth('healthy');
+        setStatusMessage('All Nodes Operational');
+      }
+    }, 5000);
+
+    return () => clearInterval(healthInterval);
+  }, []);
+
+  const getHealthStyles = () => {
+    switch (health) {
+      case 'healthy': return { dot: 'bg-emerald-500', text: 'text-emerald-400' };
+      case 'caution': return { dot: 'bg-amber-500', text: 'text-amber-400' };
+      case 'error': return { dot: 'bg-red-500', text: 'text-red-400' };
+      default: return { dot: 'bg-gray-500', text: 'text-gray-400' };
+    }
+  };
+
+  const healthStyles = getHealthStyles();
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -19,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
       </svg>
     )},
     { id: 'storage', label: 'Log Vault', icon: (
-      <svg xmlns="http://www.w3.org/2000/tsvg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
       </svg>
     )},
@@ -57,11 +91,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
         <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
           <p className="text-xs font-semibold text-gray-500 uppercase mb-2">System Status</p>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <p className="text-xs text-emerald-400">All Nodes Operational</p>
+            <div className={`w-2 h-2 rounded-full animate-pulse transition-colors duration-500 ${healthStyles.dot}`}></div>
+            <p className={`text-xs font-medium transition-colors duration-500 ${healthStyles.text}`}>
+              {statusMessage}
+            </p>
           </div>
-          <button className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-md transition-colors shadow-lg">
-            System Check
+          <button 
+            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-md transition-all shadow-lg active:scale-95"
+            onClick={() => {
+              setHealth('healthy');
+              setStatusMessage('Running Diagnostics...');
+              setTimeout(() => setStatusMessage('All Nodes Operational'), 1500);
+            }}
+          >
+            Run System Check
           </button>
         </div>
       </div>

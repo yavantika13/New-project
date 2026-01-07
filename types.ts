@@ -4,6 +4,8 @@ export enum SoundType {
   LOGGING = 'Chainsaw/Logging',
   POACHING = 'Poaching/Gunshot',
   FIRE = 'Forest Fire',
+  VEHICLE = 'Vehicle Intrusion',
+  HUMAN = 'Human Presence',
   BACKGROUND = 'Normal Background',
   UNKNOWN = 'Analyzing...'
 }
@@ -19,10 +21,14 @@ export interface DetectionEvent {
   id: string;
   timestamp: number;
   type: SoundType;
+  detectedSound: string;
+  detectedSpecies?: string;
   confidence: number;
   riskLevel: RiskLevel;
   audioBlobUrl?: string;
   details: string;
+  explanation: string;
+  status: 'Under Threat' | 'Wildlife Activity' | 'Safe' | 'Caution';
 }
 
 export interface DashboardStats {
